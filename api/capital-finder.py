@@ -3,18 +3,25 @@ from urllib import parse
 import requests
 
 class handler(BaseHTTPRequestHandler):
-
+    '''
+    The Python Runtime is used by Vercel to compile Python Serverless Functions,
+    that defines a singular HTTP handler variable,
+    inheritting from the BaseHTTPRequestHandler class.
+    '''
     def do_GET(self):
+        #Set up header
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
 
+        #Set up path
         url_components = parse.urlsplit(self.path)
         query_string_list = parse.parse_qsl(url_components.query)
         query_dict = dict(query_string_list)
 
         message = "Please enter valid country/capital name."
 
+        #If 'country' and 'capital' queries exist
         if "country" in query_dict and "capital" in query_dict:
             try:
                 url = "https://restcountries.com/v3.1/capital/"
@@ -28,7 +35,7 @@ class handler(BaseHTTPRequestHandler):
                     message = str(f"The capital of {country} is NOT {capital}")
             except:
                 message = 'Error. Pleas check your query entries.'
-
+        #If only 'country' query exist
         elif "country" in query_dict:
             try:
                 url = "https://restcountries.com/v3.1/name/"
@@ -44,7 +51,7 @@ class handler(BaseHTTPRequestHandler):
                 currencies = data
             except:
                 message = 'Country cannot be found.'
-
+        #If only 'capital' query exist
         elif "capital" in query_dict:
             try:
                 url = "https://restcountries.com/v3.1/capital/"
@@ -58,6 +65,6 @@ class handler(BaseHTTPRequestHandler):
                 message = str(f"{query_dict['capital']} is the capital of {country}. Currency is {', '.join(get_cur)}")
             except:
                 message = 'Capital cannot be found.'
-
+        #Send back the message
         self.wfile.write(message.encode())
         return
